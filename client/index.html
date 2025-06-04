@@ -4,7 +4,21 @@
   <meta charset="UTF-8">
   <title>PWA通知スケジューラー</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="manifest" href="/manifest.json">
+  
+  <!-- マニフェストファイルのパスを相対パスに修正 -->
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- iOS向けPWA設定 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="通知PWA">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  
+  <!-- テーマカラー -->
+  <meta name="theme-color" content="#000000">
+  
+  <!-- PWA説明 -->
+  <meta name="description" content="プッシュ通知をスケジュールするPWAアプリ">
 </head>
 <body>
   <h1>通知予約</h1>
