@@ -19,15 +19,15 @@ webpush.setVapidDetails(
 // DB初期化
 const db = new sqlite3.Database(":memory:");
 db.serialize(() => {
-  db.run(\`
-    CREATE TABLE IF NOT EXISTS notifications (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      message TEXT NOT NULL,
-      time TEXT NOT NULL,
-      subscription TEXT NOT NULL,
-      sent INTEGER DEFAULT 0
-    )
-  \`);
+  db.run(
+    "CREATE TABLE IF NOT EXISTS notifications (" +
+    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+    "message TEXT NOT NULL," +
+    "time TEXT NOT NULL," +
+    "subscription TEXT NOT NULL," +
+    "sent INTEGER DEFAULT 0" +
+    ")"
+  );
 });
 
 // 通知予約API
@@ -42,25 +42,42 @@ app.post("/api/schedule", (req, res) => {
 // 毎分通知チェック
 cron.schedule("* * * * *", () => {
   const now = new Date().toISOString();
+  console.log("通知チェック実行: " + now);
 
   db.all("SELECT * FROM notifications WHERE time <= ? AND sent = 0", [now], (err, rows) => {
     if (err) return console.error(err);
+    
+    console.log("送信対象の通知: " + rows.length + "件");
+    if (rows.length > 0) {
+      console.log("送信対象:", rows.map(r => ({ id: r.id, message: r.message, time: r.time })));
+    }
 
     rows.forEach(row => {
-      const subscription = JSON.parse(row.subscription);
-      const payload = JSON.stringify({ message: row.message });
-
-      webpush.sendNotification(subscription, payload)
-        .then(() => {
-          db.run("UPDATE notifications SET sent = 1 WHERE id = ?", [row.id]);
-        })
-        .catch(err => {
-          console.error("Push送信失敗:", err);
+      try {
+        const subscription = JSON.parse(row.subscription);
+        const payload = JSON.stringify({ 
+          message: row.message,
+          title: "予約通知",
+          icon: "/icon-192.png"
         });
+
+        console.log("通知送信開始 ID:" + row.id + ", メッセージ:" + row.message);
+        
+        webpush.sendNotification(subscription, payload)
+          .then(() => {
+            console.log("通知送信成功 ID:" + row.id);
+            db.run("UPDATE notifications SET sent = 1 WHERE id = ?", [row.id]);
+          })
+          .catch(err => {
+            console.error("Push送信失敗 ID:" + row.id + ":", err);
+          });
+      } catch (error) {
+        console.error("通知処理エラー ID:" + row.id + ":", error);
+      }
     });
   });
 });
 
 app.listen(port, () => {
-  console.log(\`Server is running on port \${port}\`);
+  console.log("Server is running on port " + port);
 });

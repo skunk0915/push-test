@@ -17,7 +17,14 @@ document.getElementById('notify-form').addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const message = document.getElementById('message').value;
-  const time = document.getElementById('time').value;
+  const timeInput = document.getElementById('time').value;
+  
+  // 日時文字列をDate型に変換し、ISOString形式に変換
+  // HTML datetime-localは「YYYY-MM-DDThh:mm」形式なので秒を追加
+  const localTime = new Date(timeInput + ':00');
+  
+  // ローカル時間をUTCに変換（サーバー側のnew Date().toISOString()と一致させる）
+  const time = localTime.toISOString();
 
   const sw = await registerServiceWorker();
   const subscription = await subscribeUser(sw);
@@ -30,7 +37,7 @@ document.getElementById('notify-form').addEventListener('submit', async (e) => {
     }
   });
 
-  alert('通知を予約しました！');
+  alert(`通知を予約しました！\n予約時間: ${localTime.toLocaleString()}`);
 });
 
 // VAPIDキー変換関数
