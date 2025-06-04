@@ -1,4 +1,4 @@
-const publicVapidKey = "あなたの公開VAPIDキーをここに"; // 後でRenderから取得
+const publicVapidKey = "BI8nx4IDiOyGLe2wIR9NyU_N3zg_FB60DzB4jKNqQaTlcDwsrZtgymyBItYzC_aeIAB4ryifYGfdZif2YEWCARQ"; // 後でRenderから取得
 
 async function registerServiceWorker() {
   const sw = await navigator.serviceWorker.register('/sw.js');
@@ -22,7 +22,7 @@ document.getElementById('notify-form').addEventListener('submit', async (e) => {
   const sw = await registerServiceWorker();
   const subscription = await subscribeUser(sw);
 
-  await fetch('https://your-render-server.onrender.com/api/schedule', {
+  await fetch('https://push-test-iujx.onrender.com/api/schedule', {
     method: 'POST',
     body: JSON.stringify({ subscription, message, time }),
     headers: {
