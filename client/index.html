@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>PWA通知スケジューラー</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="manifest" href="/manifest.json">
+</head>
+<body>
+  <h1>通知予約</h1>
+  <form id="notify-form">
+    <label>通知内容: <input type="text" id="message" required></label><br>
+    <label>通知時刻 (ISO形式): <input type="datetime-local" id="time" required></label><br>
+    <button type="submit">通知を予約</button>
+  </form>
+
+  <script src="main.js" defer></script>
+</body>
+</html>
