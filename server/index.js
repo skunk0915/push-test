@@ -28,6 +28,12 @@ app.get("/api/ping", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
+// wakeup用エンドポイント
+app.get("/api/wakeup", (req, res) => {
+  console.log("Wakeup ping received at", new Date().toISOString());
+  res.json({ status: "wakeup ok" });
+});
+
 // VAPIDキー（Renderの.envから取得）
 webpush.setVapidDetails(
   "mailto:your@email.com",
