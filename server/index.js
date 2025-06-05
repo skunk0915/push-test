@@ -3,7 +3,8 @@ const bodyParser = require("body-parser");
 const webpush = require("web-push");
 const sqlite3 = require("sqlite3").verbose();
 const cron = require("node-cron");
-const axios = require("axios");
+const https = require("https");
+const http = require("http");
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -152,12 +153,33 @@ cron.schedule("* * * * *", () => {
 });
 
 // サーバーがスリープするのを防ぐために10分ごとに自分自身にpingを送信
-cron.schedule("*/10 * * * *", async () => {
+cron.schedule("*/10 * * * *", () => {
   try {
     const serverUrl = process.env.SERVER_URL || `http://localhost:${port}`;
     console.log(`Sending self-ping to prevent sleep: ${serverUrl}/api/ping`);
-    const response = await axios.get(`${serverUrl}/api/ping`);
-    console.log("Self-ping successful:", response.data);
+    
+    // URLをパースしてhttpかhttpsかを判断
+    const isHttps = serverUrl.startsWith('https://');
+    const urlObj = new URL(`${serverUrl}/api/ping`);
+    
+    // 適切なモジュールを選択
+    const requestModule = isHttps ? https : http;
+    
+    const req = requestModule.get(urlObj, (res) => {
+      let data = '';
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+      res.on('end', () => {
+        console.log("Self-ping successful:", data);
+      });
+    });
+    
+    req.on('error', (error) => {
+      console.error("Self-ping failed:", error.message);
+    });
+    
+    req.end();
   } catch (error) {
     console.error("Self-ping failed:", error.message);
   }
