@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const webpush = require("web-push");
 const sqlite3 = require("sqlite3").verbose();
 const cron = require("node-cron");
+const axios = require("axios");
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -19,6 +20,12 @@ app.use((req, res, next) => {
 });
 
 app.use(bodyParser.json());
+
+// ヘルスチェック用エンドポイント
+app.get("/api/ping", (req, res) => {
+  console.log("Ping received at", new Date().toISOString());
+  res.json({ status: "ok", timestamp: new Date().toISOString() });
+});
 
 // VAPIDキー（Renderの.envから取得）
 webpush.setVapidDetails(
@@ -141,6 +148,18 @@ cron.schedule("* * * * *", () => {
     });
   } catch (error) {
     console.error("通知チェック全体エラー:", error);
+  }
+});
+
+// サーバーがスリープするのを防ぐために10分ごとに自分自身にpingを送信
+cron.schedule("*/10 * * * *", async () => {
+  try {
+    const serverUrl = process.env.SERVER_URL || `http://localhost:${port}`;
+    console.log(`Sending self-ping to prevent sleep: ${serverUrl}/api/ping`);
+    const response = await axios.get(`${serverUrl}/api/ping`);
+    console.log("Self-ping successful:", response.data);
+  } catch (error) {
+    console.error("Self-ping failed:", error.message);
   }
 });
 
